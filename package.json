@@ -27,7 +27,7 @@
   "homepage": "https://github.com/freedomofpress/sigsum-ts#readme",
   "bugs": "https://github.com/freedomofpress/sigsum-ts/issues",
   "devDependencies": {
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.4",
     "@vitest/coverage-v8": "^4.1.4",
     "eslint-plugin-simple-import-sort": "^13.0.0",
