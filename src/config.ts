@@ -15,6 +15,7 @@ export const CONFIG_NONE = "none";
 interface ConfigState {
   policy: PolicyImpl;
   names: Map<string, Quorum>;
+  usedNames: Map<string, string>;
 }
 
 class PolicyImpl implements Policy {
@@ -109,8 +110,14 @@ async function parseGroup(state: ConfigState, args: string[]): Promise<void> {
     throw new Error("invalid threshold");
 
   const subs: Quorum[] = members.map((m) => {
+    const parent = state.usedNames.get(m);
+    if (parent !== undefined) {
+      if (parent) throw new Error(`${m} is already a member of ${parent}`);
+      throw new Error(`${m} cannot be a group member`);
+    }
     const q = state.names.get(m);
     if (!q) throw new Error(`undefined name: ${m}`);
+    state.usedNames.set(m, name);
     return q;
   });
   state.names.set(name, new QuorumKofN(subs, k));
@@ -129,6 +136,7 @@ export async function parsePolicyText(text: string): Promise<Policy> {
   const state: ConfigState = {
     policy: new PolicyImpl(),
     names: new Map([[CONFIG_NONE, new QuorumKofN([], 0)]]),
+    usedNames: new Map([[CONFIG_NONE, ""]]),
   };
 
   const lines = text.split(/\r?\n/);
