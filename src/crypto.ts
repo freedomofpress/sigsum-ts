@@ -121,34 +121,53 @@ export async function verifyInclusionProof(
   treeHead: TreeHead,
   path: Hash[],
 ): Promise<boolean> {
-  if (leafIndex > treeHead.Size) {
+  if (
+    !Number.isSafeInteger(leafIndex) ||
+    !Number.isSafeInteger(treeHead.Size) ||
+    leafIndex < 0 ||
+    treeHead.Size < 1 ||
+    leafIndex >= treeHead.Size
+  ) {
     throw new Error("proof input is malformed: index out of range");
   }
+  if (
+    leafHash.bytes.length !== 32 ||
+    treeHead.RootHash.bytes.length !== 32 ||
+    path.length > 63 ||
+    path.some((hash) => hash.bytes.length !== 32)
+  ) {
+    throw new Error("proof input is malformed: invalid hash path");
+  }
 
-  if (path.length === 0) {
+  if (treeHead.Size === 1) {
+    if (path.length !== 0) {
+      throw new Error("internal error: unused path elements");
+    }
     if (!constantTimeBufferEqual(leafHash.bytes, treeHead.RootHash.bytes)) {
       throw new Error("tree size is 1 but leaf does not match the root");
     }
+    return true;
   }
 
   let currentHash = leafHash;
   let currentIndex = leafIndex;
   let lastNodeIndex = treeHead.Size - 1;
   let pathIndex = 0;
+  const nextSibling = (): Hash => {
+    const sibling = path[pathIndex++];
+    if (!sibling) throw new Error("proof input is malformed: path too short");
+    return sibling;
+  };
 
   while (lastNodeIndex > 0) {
-    const siblingHash = path[pathIndex] as Hash;
-
-    if (currentIndex & 1) {
-      currentHash = await hashInteriorNode(siblingHash, currentHash);
-      pathIndex++;
+    if (currentIndex % 2 === 1) {
+      currentHash = await hashInteriorNode(nextSibling(), currentHash);
     } else if (currentIndex < lastNodeIndex) {
-      currentHash = await hashInteriorNode(currentHash, siblingHash);
-      pathIndex++;
+      currentHash = await hashInteriorNode(currentHash, nextSibling());
     }
 
-    currentIndex >>= 1;
-    lastNodeIndex >>= 1;
+    currentIndex = Math.floor(currentIndex / 2);
+    lastNodeIndex = Math.floor(lastNodeIndex / 2);
   }
 
   if (pathIndex !== path.length) {
