@@ -3,7 +3,11 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { hexToUint8Array } from "../encoding";
 import { compilePolicy } from "../policyCompiler";
 import { RawPublicKey } from "../types";
-import { verifyMessage, verifyMessageWithCompiledPolicy } from "../verify";
+import {
+  verifyHash,
+  verifyMessage,
+  verifyMessageWithCompiledPolicy,
+} from "../verify";
 
 type VerifierFn = (
   message: Uint8Array,
@@ -209,4 +213,10 @@ node_hash=b6be547daa4f6b3d42628bb14020e9b2d73a4ee8cf3c4e0a3b88793916926f27
       verifyFn(MESSAGE, PUBKEY, POLICY, failQuorum),
     ).rejects.toThrow(/cosignature quorum not satisfied/i);
   });
+});
+
+it("rejects a message hash with the wrong length", async () => {
+  await expect(
+    verifyHash(new Uint8Array(31), PUBKEY, POLICY, PROOF),
+  ).rejects.toThrow("message hash must be exactly 32 bytes");
 });

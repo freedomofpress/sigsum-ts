@@ -12,6 +12,10 @@ import {
   TreeHead,
 } from "./types";
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return Uint8Array.from(bytes).buffer;
+}
+
 export function constantTimeBufferEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
 
@@ -26,9 +30,12 @@ export function constantTimeBufferEqual(a: Uint8Array, b: Uint8Array): boolean {
 export async function importKey(
   rawPublicKey: RawPublicKey,
 ): Promise<PublicKey> {
+  if (rawPublicKey.bytes.length !== 32) {
+    throw new Error("Ed25519 raw keys must be exactly 32-bytes");
+  }
   const key = await crypto.subtle.importKey(
     "raw",
-    rawPublicKey.bytes.buffer as ArrayBuffer,
+    toArrayBuffer(rawPublicKey.bytes),
     "Ed25519",
     true,
     ["verify"],
@@ -49,8 +56,8 @@ export async function verifySignature(
   return await crypto.subtle.verify(
     { name: "Ed25519" },
     key.key,
-    signature.bytes.buffer as ArrayBuffer,
-    message.buffer as ArrayBuffer,
+    toArrayBuffer(signature.bytes),
+    toArrayBuffer(message),
   );
 }
 
@@ -65,9 +72,7 @@ export async function hashKey(publicKey: PublicKey): Promise<KeyHash> {
 }
 
 export async function hashMessage(message: Uint8Array): Promise<Hash> {
-  return new Hash(
-    await crypto.subtle.digest("SHA-256", message.buffer as ArrayBuffer),
-  );
+  return new Hash(await crypto.subtle.digest("SHA-256", toArrayBuffer(message)));
 }
 
 export async function verifySignedTreeHead(

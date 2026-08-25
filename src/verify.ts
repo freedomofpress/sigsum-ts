@@ -28,6 +28,9 @@ async function verifyCommon(
   getLogKey: () => Promise<PublicKey>,
   evalQuorum: () => Promise<boolean>,
 ): Promise<boolean> {
+  if (message_hash.length !== 32) {
+    throw new Error("message hash must be exactly 32 bytes");
+  }
   const submitterPublicKey = await importKey(submitterRawPublicKey);
   const submitterKeyHash = await hashKey(submitterPublicKey);
 
