@@ -122,6 +122,13 @@ describe("crypto", () => {
     expect(key.key.usages).toEqual(["verify"]);
   });
 
+  it("imports a public key view", async () => {
+    const backing = new Uint8Array(34);
+    backing.set(VALID_PUBLIC_KEY.bytes, 1);
+    const key = await importKey(new RawPublicKey(backing.subarray(1, 33)));
+    expect(key.key.type).toBe("public");
+  });
+
   it("throws on invalid raw public key length", async () => {
     const badKey = VALID_PUBLIC_KEY.bytes.slice(0, 30);
     await expect(importKey(new RawPublicKey(badKey))).rejects.toThrow();
@@ -130,6 +137,20 @@ describe("crypto", () => {
   it("returns true for a valid signature", async () => {
     const key = await importKey(VALID_PUBLIC_KEY);
     const ok = await verifySignature(key, VALID_SIGNATURE, VALID_MESSAGE);
+    expect(ok).toBe(true);
+  });
+
+  it("verifies signature and message views", async () => {
+    const message = new Uint8Array(VALID_MESSAGE.length + 2);
+    const signature = new Uint8Array(VALID_SIGNATURE.bytes.length + 2);
+    message.set(VALID_MESSAGE, 1);
+    signature.set(VALID_SIGNATURE.bytes, 1);
+    const key = await importKey(VALID_PUBLIC_KEY);
+    const ok = await verifySignature(
+      key,
+      new Signature(signature.subarray(1, signature.length - 1)),
+      message.subarray(1, message.length - 1),
+    );
     expect(ok).toBe(true);
   });
 
@@ -172,6 +193,15 @@ describe("crypto", () => {
     const hash = Uint8ArrayToBase64((await hashKey(key)).bytes);
     expect(hash).toMatch(/^[a-zA-Z0-9+/]+={0,2}$/);
     expect(hash.length).toBeGreaterThan(40);
+  });
+
+  it("hashes only the bytes in a view", async () => {
+    const backing = new Uint8Array([0, ...VALID_MESSAGE, 0]);
+    const viewHash = await hashMessage(
+      backing.subarray(1, backing.length - 1),
+    );
+    const messageHash = await hashMessage(VALID_MESSAGE);
+    expect(viewHash.bytes).toEqual(messageHash.bytes);
   });
 
   it("returns a consistent hash for the same key", async () => {
