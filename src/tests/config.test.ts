@@ -29,7 +29,7 @@ describe("config", () => {
         group test-majority 2 test-nisse test-rgdd test-smartit
         group prod-strict all prod-glasklar prod-mullvad
 
-        group mixed-witnesses 3 test-nisse test-rgdd test-smartit prod-glasklar prod-mullvad
+        group mixed-witnesses all test-majority prod-strict
 
         quorum mixed-witnesses`;
     const policy = await parsePolicyText(text);
@@ -51,9 +51,8 @@ describe("config", () => {
         witness glasklar      ${witnesses.glasklar}
         witness mullvad       ${witnesses.mullvad}
 
-        group test-any any nisse rgdd smartit
-        group prod-all all glasklar mullvad
         group test-2of3 2 nisse rgdd smartit
+        group prod-all all glasklar mullvad
         group combined any test-2of3 prod-all
 
         # Final quorum
@@ -212,6 +211,42 @@ describe("config", () => {
     `;
     await expect(() => parsePolicyText(text)).rejects.toThrow(
       "duplicate group name: duplicate-group",
+    );
+  });
+
+  it("fails when a witness is listed twice in a group", async () => {
+    const text = `
+      log ${log1}
+      witness nisse ${witnesses.nisse}
+      group duplicated 2 nisse nisse
+      quorum duplicated
+    `;
+    await expect(() => parsePolicyText(text)).rejects.toThrow(
+      "nisse is already a member of duplicated",
+    );
+  });
+
+  it("fails when a witness is reused across groups", async () => {
+    const text = `
+      log ${log1}
+      witness nisse ${witnesses.nisse}
+      group first any nisse
+      group second any nisse
+      quorum second
+    `;
+    await expect(() => parsePolicyText(text)).rejects.toThrow(
+      "nisse is already a member of first",
+    );
+  });
+
+  it("fails when none is used as a group member", async () => {
+    const text = `
+      log ${log1}
+      group invalid any none
+      quorum invalid
+    `;
+    await expect(() => parsePolicyText(text)).rejects.toThrow(
+      "none cannot be a group member",
     );
   });
 
