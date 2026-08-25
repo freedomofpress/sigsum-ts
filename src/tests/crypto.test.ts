@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   constantTimeBufferEqual,
+  hashInteriorNode,
   hashKey,
   hashMessage,
   importKey,
@@ -32,7 +33,7 @@ root_hash=f24ca2b7b234c380438fbeb7e6a3e7481705adf22b8ecab47ca049b31b642bd8
 signature=a3e28bf1b8e97664ba2505ed1f02373af70ad86f5a794b8ddf77c9dfc2cda3766479cc53906312dc705f5892472eb1b1a60843f1fd0e0ea3442b6df6a7f11805
 cosignature=e923764535cac36836d1af682a2a3e5352e2636ec29c1d34c00160e1f4946d31 1749045854 eb9670fc459a8a3ca226cda1cdc37079018e7e2ae94db426da8e25e181ca29fd651e5ab6e12b3b080fd93cf41304d78669da499744f2c8db8adf25d9fa1ecb0e
 
-leaf_index=1
+leaf_index=0
 `;
 
 const VALID_PUBLIC_KEY = new RawPublicKey(
@@ -337,6 +338,32 @@ describe("crypto", () => {
         proof.inclusion.Path,
       ),
     ).rejects.toThrow(/tree size is 1 but leaf does not match/);
+  });
+
+  it("rejects an index equal to the tree size", async () => {
+    await expect(
+      verifyInclusionProof(
+        TREEHEAD_ROOT_HASH,
+        1,
+        { Size: 1, RootHash: TREEHEAD_ROOT_HASH },
+        [],
+      ),
+    ).rejects.toThrow(/index out of range/);
+  });
+
+  it("verifies tree sizes above the signed 32-bit range", async () => {
+    const leaf = await hashMessage(new Uint8Array([0]));
+    const path: Hash[] = [];
+    let root = leaf;
+    for (let i = 0; i < 32; i++) {
+      const sibling = await hashMessage(new Uint8Array([i + 1]));
+      path.push(sibling);
+      root = await hashInteriorNode(root, sibling);
+    }
+
+    await expect(
+      verifyInclusionProof(leaf, 0, { Size: 2 ** 31 + 1, RootHash: root }, path),
+    ).resolves.toBe(true);
   });
 });
 
