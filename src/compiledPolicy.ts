@@ -63,11 +63,16 @@ export async function importAndHashAll(
   raws: Uint8Array[],
 ): Promise<HashedKey[]> {
   const out: HashedKey[] = [];
+  const seen = new Set<string>();
   for (const rawBytes of raws) {
     const raw = new RawPublicKey(rawBytes);
     const pub = await importKey(raw);
     const hash = await hashKey(pub);
     const b64 = new Base64KeyHash(Uint8ArrayToBase64(hash.bytes));
+    if (seen.has(b64.value)) {
+      throw new Error("compiled policy contains duplicate public keys");
+    }
+    seen.add(b64.value);
     out.push({
       pub,
       raw,
