@@ -1,6 +1,6 @@
 {
   "name": "@freedomofpress/sigsum",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "A Sigsum proof verifier for the browser.",
   "repository": {
     "type": "git",
