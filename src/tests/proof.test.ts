@@ -21,9 +21,17 @@ describe("SigsumProof", () => {
   });
 
   it.each(["tree_size", "size"])("accepts the %s field", async (field) => {
-    const text = `${SINGLETON_PROOF.replace("tree_size", field)}\n\nleaf_index=0`;
-    const proof = await SigsumProof.fromAscii(text);
+    const proof = await SigsumProof.fromAscii(
+      SINGLETON_PROOF.replace("tree_size", field),
+    );
     expect(proof.treeHead.SignedTreeHead.TreeHead.Size).toBe(1);
+    expect(proof.inclusion).toEqual({ LeafIndex: 0, Path: [] });
+  });
+
+  it("rejects an inclusion proof for a singleton tree", async () => {
+    await expect(
+      SigsumProof.fromAscii(`${SINGLETON_PROOF}\n\nleaf_index=0`),
+    ).rejects.toThrow("singleton proof must not include an inclusion proof");
   });
 
   it.each([
