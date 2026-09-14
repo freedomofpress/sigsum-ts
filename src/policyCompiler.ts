@@ -157,7 +157,10 @@ function prepareQuorum(
   const members = quorum.members.map((member) =>
     prepareQuorum(member, witnessIndex),
   );
-  if (members.length === 0) throw new Error("empty quorum group");
+  if (members.length === 0) {
+    if (quorum.threshold !== 0) throw new Error("empty quorum group");
+    return { kind: "group", members, threshold: 0, bytecodeSize: 0 };
+  }
 
   if (members.length === 1) {
     return {
@@ -199,6 +202,7 @@ function compileQuorum(
   }
 
   const members = node.members;
+  if (members.length === 0) return 0;
   const first = members[0];
   let left = node.bytecodeSize;
   let currentSize = first.bytecodeSize;

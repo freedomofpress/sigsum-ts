@@ -101,6 +101,7 @@ export async function verifyHash(
 
   async function evalQuorum(): Promise<boolean> {
     const present = new Set<Base64KeyHash>();
+    if (policy.quorum.isQuorum(present)) return true;
     for (const [keyHash, entity] of policy.witnesses) {
       const cosig = Base64KeyHash.lookup(proof.treeHead.Cosignatures, keyHash);
       if (!cosig) continue;

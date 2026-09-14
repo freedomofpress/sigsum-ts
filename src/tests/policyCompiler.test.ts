@@ -29,6 +29,16 @@ describe("policyCompiler", () => {
     expect(Uint8ArrayToHex(compiled)).toBe(EXPECTED_HEX);
   });
 
+  it("compiles a policy with no witness quorum", async () => {
+    const compiled = await compilePolicy(`
+      log ${"11".repeat(32)}
+      quorum none
+    `);
+    expect(compiled[2]).toBe(0);
+    expect(compiled[3]).toBe(0);
+    expect(compiled).toHaveLength(36);
+  });
+
   it("throws on syntax errors", async () => {
     const malformed = `
       log 1111111111111111111111111111111111111111111111111111111111111111
