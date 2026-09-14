@@ -16,7 +16,13 @@ export function parseCompiledPolicy(
   rawPubLen = DEFAULT_RAW_PUBKEY_LEN,
 ): CompiledPolicy {
   if (buf.length < 4) throw new Error("compiled policy too short");
+  if (!Number.isSafeInteger(rawPubLen) || rawPubLen < 1) {
+    throw new Error("invalid raw public key length");
+  }
   const version = buf[0];
+  if (version !== 0) {
+    throw new Error(`unsupported compiled policy version ${version}`);
+  }
   const nLogs = buf[1];
   const nWitnesses = buf[2];
   const quorumLen = buf[3];
@@ -46,6 +52,8 @@ export function parseCompiledPolicy(
   // quorum bytecode
   expect(quorumLen);
   const quorum = buf.slice(off, off + quorumLen);
+  off += quorumLen;
+  if (off !== buf.length) throw new Error("compiled policy has trailing data");
 
   return { version, logsRaw, witnessesRaw, quorum };
 }
@@ -57,8 +65,6 @@ type HashedKey = {
   b64: Base64KeyHash;
 };
 
-// Build hashed, sorted lists that mirror the compiler order (compiler sorted by key-hash).
-// We recompute key-hash locally and sort—safe even if the compiler was strict about order.
 export async function importAndHashAll(
   raws: Uint8Array[],
 ): Promise<HashedKey[]> {
@@ -80,10 +86,9 @@ export async function importAndHashAll(
       b64,
     });
   }
-  // lexicographic sort on hash bytes
   out.sort((a, b) => {
-    const A = a.hash as unknown as Uint8Array;
-    const B = b.hash as unknown as Uint8Array;
+    const A = a.hash.bytes;
+    const B = b.hash.bytes;
     for (let i = 0; i < A.length && i < B.length; i++) {
       if (A[i] !== B[i]) return A[i] - B[i];
     }
@@ -132,15 +137,13 @@ export function evalQuorumBytecode(
 
     switch (cls) {
       case 0: {
-        // special
-        prefix = 0;
+        if (prefix !== 0) return false;
         if (instr === 0x01) {
-          // ADD
           if (sp < 2) return false;
           const a = pop1();
           const b = pop1();
           const s = (a + b) & 0xff;
-          // emulate overflow check like C (optional in JS, but we keep to spec spirit)
+          // Reject uint8 overflow.
           if (s < a || s < b) return false;
           push(s);
         } else {
@@ -150,7 +153,7 @@ export function evalQuorumBytecode(
       }
 
       case 1: {
-        // witness reference X?
+        if (prefix > 0x03ffffff) return false;
         const id = ((prefix << 6) | low) >>> 0;
         prefix = 0;
         if (id >= nwitnesses) return false;
@@ -159,7 +162,7 @@ export function evalQuorumBytecode(
       }
 
       case 2: {
-        // >= K
+        if (prefix > 0x03ffffff) return false;
         if (sp < 1) return false;
         const k = ((prefix << 6) | low) >>> 0;
         prefix = 0;
@@ -169,11 +172,12 @@ export function evalQuorumBytecode(
       }
 
       case 3: {
-        prefix = (prefix << 6) | low;
+        if ((prefix === 0 && low === 0) || prefix > 0x03ffffff) return false;
+        prefix = ((prefix << 6) | low) >>> 0;
         continue;
       }
     }
   }
 
-  return sp === 1 && stack[0] === 1;
+  return prefix === 0 && sp === 1 && stack[0] === 1;
 }
