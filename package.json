@@ -28,11 +28,11 @@
   "homepage": "https://github.com/freedomofpress/sigsum-ts#readme",
   "bugs": "https://github.com/freedomofpress/sigsum-ts/issues",
   "devDependencies": {
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "prettier": "3.9.6",
-    "typescript-eslint": "^8.69.0"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
   }
 }
