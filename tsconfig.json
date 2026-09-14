@@ -4,13 +4,14 @@
     "lib": ["DOM", "ES2022"],
     "module": "ESNext",
     "sourceMap": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "declaration": true,
     "skipLibCheck": true,
+    "rootDir": "./src",
     "outDir": "./dist"
   },
   "include": ["./src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/tests"]
 }
