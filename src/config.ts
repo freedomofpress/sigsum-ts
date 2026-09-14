@@ -104,9 +104,14 @@ async function parseGroup(state: ConfigState, args: string[]): Promise<void> {
   let k: number;
   if (thresholdRaw === "any") k = 1;
   else if (thresholdRaw === "all") k = members.length;
-  else k = parseInt(thresholdRaw);
+  else {
+    if (!/^[0-9]+$/.test(thresholdRaw)) {
+      throw new Error("invalid threshold");
+    }
+    k = Number(thresholdRaw);
+  }
 
-  if (isNaN(k) || k < 1 || k > members.length)
+  if (!Number.isSafeInteger(k) || k < 1 || k > members.length)
     throw new Error("invalid threshold");
 
   const subs: Quorum[] = members.map((m) => {
