@@ -113,6 +113,29 @@ describe("config", () => {
     );
   });
 
+  it("accepts a group threshold with leading zeros", async () => {
+    const text = `
+      log ${log1}
+      witness nisse ${witnesses.nisse}
+      group valid 01 nisse
+      quorum valid
+    `;
+    await expect(parsePolicyText(text)).resolves.toBeDefined();
+  });
+
+  it.each(["1x", "1.0", "9007199254740992"])(
+    "fails on invalid group threshold %s",
+    async (threshold) => {
+      const text = `
+        log ${log1}
+        witness nisse ${witnesses.nisse}
+        group invalid ${threshold} nisse
+        quorum invalid
+      `;
+      await expect(parsePolicyText(text)).rejects.toThrow("invalid threshold");
+    },
+  );
+
   it("fails on invalid syntax (missing witness name)", async () => {
     const text = `
       log ${log1}
