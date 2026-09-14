@@ -180,10 +180,18 @@ export class SigsumProof {
     );
     const treeHead = parseCosignedTreeHead(treeLines);
 
-    if (inclusionStart === -1) {
-      throw new Error("missing leaf_index line in inclusion proof");
+    let inclusion: InclusionProof;
+    if (treeHead.SignedTreeHead.TreeHead.Size === 1) {
+      if (inclusionStart !== -1) {
+        throw new Error("singleton proof must not include an inclusion proof");
+      }
+      inclusion = { LeafIndex: 0, Path: [] };
+    } else {
+      if (inclusionStart === -1) {
+        throw new Error("missing leaf_index line in inclusion proof");
+      }
+      inclusion = parseInclusionProof(lines.slice(inclusionStart + 1));
     }
-    const inclusion = parseInclusionProof(lines.slice(inclusionStart + 1));
 
     return new SigsumProof(version, logKeyHash, leaf, treeHead, inclusion);
   }
