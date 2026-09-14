@@ -27,6 +27,10 @@ group 2of3 2 test1 test2 test3
 
 quorum 2of3`;
 
+const POLICY_WITHOUT_WITNESSES = `
+log 4644af2abd40f4895a003bca350f9d5912ab301a49c77f13e5b6d905c20a5fe6 https://test.sigsum.org/barreleye
+quorum none`;
+
 const PROOF = `
 version=1
 log=4e89cc51651f0d95f3c6127c15e1a42e3ddf7046c5b17b752689c402e773bb4d
@@ -218,4 +222,15 @@ it("rejects a message hash with the wrong length", async () => {
   await expect(
     verifyHash(new Uint8Array(31), PUBKEY, POLICY, PROOF),
   ).rejects.toThrow("message hash must be exactly 32 bytes");
+});
+
+it("accepts a policy with no witness quorum", async () => {
+  await expect(
+    verifyMessage(MESSAGE, PUBKEY, POLICY_WITHOUT_WITNESSES, PROOF),
+  ).resolves.toBe(true);
+
+  const compiled = await compilePolicy(POLICY_WITHOUT_WITNESSES);
+  await expect(
+    verifyMessageWithCompiledPolicy(MESSAGE, PUBKEY, compiled, PROOF),
+  ).resolves.toBe(true);
 });
