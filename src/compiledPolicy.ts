@@ -1,6 +1,6 @@
-import { hashKey, importKey } from "./crypto";
-import { Uint8ArrayToBase64 } from "./encoding";
-import { Base64KeyHash, KeyHash, PublicKey, RawPublicKey } from "./types";
+import { hashKey, importKey } from "./crypto.js";
+import { Uint8ArrayToBase64 } from "./encoding.js";
+import { Base64KeyHash, KeyHash, PublicKey, RawPublicKey } from "./types.js";
 
 const DEFAULT_RAW_PUBKEY_LEN = 32;
 

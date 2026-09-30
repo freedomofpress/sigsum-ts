@@ -6,8 +6,29 @@
     "type": "git",
     "url": "https://github.com/freedomofpress/sigsum-ts"
   },
+  "type": "module",
   "main": "dist/verify.js",
   "types": "dist/verify.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/verify.d.ts",
+      "default": "./dist/verify.js"
+    },
+    "./dist/*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    },
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

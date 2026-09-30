@@ -1,6 +1,6 @@
-import { CheckpointNamePrefix, CosignatureNamespace } from "./constants";
-import { Uint8ArrayToBase64, Uint8ArrayToHex } from "./encoding";
-import { KeyHash, TreeHead } from "./types";
+import { CheckpointNamePrefix, CosignatureNamespace } from "./constants.js";
+import { Uint8ArrayToBase64, Uint8ArrayToHex } from "./encoding.js";
+import { KeyHash, TreeHead } from "./types.js";
 
 export function formatCheckpoint(
   treeHead: TreeHead,

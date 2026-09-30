@@ -1,9 +1,9 @@
 // https://git.glasklar.is/nisse/sigsum-c/-/blob/main/tools/sigsum-compile-policy.c?ref_type=heads
 
-import { parsePolicyText } from "./config";
-import { base64ToUint8Array } from "./encoding";
-import { Entity, isQuorumKofN, isQuorumSingle, Policy, Quorum } from "./policy";
-import { Base64KeyHash, KeyHash, RawPublicKey } from "./types";
+import { parsePolicyText } from "./config.js";
+import { base64ToUint8Array } from "./encoding.js";
+import { Entity, isQuorumKofN, isQuorumSingle, Policy, Quorum } from "./policy.js";
+import { Base64KeyHash, KeyHash, RawPublicKey } from "./types.js";
 
 const BYTECODE_ADD = 0x01;
 

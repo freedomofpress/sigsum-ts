@@ -4,8 +4,8 @@ import {
   evalQuorumBytecode,
   importAndHashAll,
   parseCompiledPolicy,
-} from "../compiledPolicy";
-import { Uint8ArrayToHex } from "../encoding";
+} from "../compiledPolicy.js";
+import { Uint8ArrayToHex } from "../encoding.js";
 
 describe("compiledPolicy", () => {
   it("rejects unsupported versions and trailing data", () => {

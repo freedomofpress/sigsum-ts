@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Uint8ArrayToHex } from "../encoding";
-import { compilePolicy } from "../policyCompiler";
+import { Uint8ArrayToHex } from "../encoding.js";
+import { compilePolicy } from "../policyCompiler.js";
 
 const SAMPLE_POLICY = `
 log 1111111111111111111111111111111111111111111111111111111111111111

@@ -2,9 +2,9 @@ import {
   evalQuorumBytecode,
   importAndHashAll,
   parseCompiledPolicy,
-} from "./compiledPolicy";
-import { parsePolicyText } from "./config";
-import { LeafNamespace } from "./constants";
+} from "./compiledPolicy.js";
+import { parsePolicyText } from "./config.js";
+import { LeafNamespace } from "./constants.js";
 import {
   constantTimeBufferEqual,
   hashKey,
@@ -14,12 +14,12 @@ import {
   verifyInclusionProof,
   verifySignature,
   verifySignedTreeHead,
-} from "./crypto";
-import { Uint8ArrayToBase64 } from "./encoding";
-import { attachNamespace } from "./format";
-import { Policy } from "./policy";
-import { SigsumProof } from "./proof";
-import { Base64KeyHash, Hash, PublicKey, RawPublicKey } from "./types";
+} from "./crypto.js";
+import { Uint8ArrayToBase64 } from "./encoding.js";
+import { attachNamespace } from "./format.js";
+import { Policy } from "./policy.js";
+import { SigsumProof } from "./proof.js";
+import { Base64KeyHash, Hash, PublicKey, RawPublicKey } from "./types.js";
 
 async function verifyCommon(
   message_hash: Uint8Array,

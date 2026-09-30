@@ -1,6 +1,6 @@
 // https://git.glasklar.is/sigsum/core/sigsum-go/-/blob/main/pkg/policy/policy.go
 
-import { Base64KeyHash, PublicKey } from "./types";
+import { Base64KeyHash, PublicKey } from "./types.js";
 
 export interface Entity {
   publicKey: PublicKey;

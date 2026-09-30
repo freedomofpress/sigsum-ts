@@ -1,5 +1,5 @@
-import { hashKey, importKey } from "./crypto";
-import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding";
+import { hashKey, importKey } from "./crypto.js";
+import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding.js";
 import {
   Entity,
   EntityMap,
@@ -7,8 +7,8 @@ import {
   Quorum,
   QuorumKofN,
   QuorumSingle,
-} from "./policy";
-import { Base64KeyHash, RawPublicKey } from "./types";
+} from "./policy.js";
+import { Base64KeyHash, RawPublicKey } from "./types.js";
 
 export const CONFIG_NONE = "none";
 

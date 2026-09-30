@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { Hash, KeyHash, Leaf, Signature } from "../types";
+import { Hash, KeyHash, Leaf, Signature } from "../types.js";
 
 describe("Leaf", () => {
   it("returns raw bytes for auditing", () => {
