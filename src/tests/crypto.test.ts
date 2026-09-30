@@ -10,9 +10,9 @@ import {
   verifyInclusionProof,
   verifySignature,
   verifySignedTreeHead,
-} from "../crypto";
-import { Uint8ArrayToBase64 } from "../encoding";
-import { SigsumProof } from "../proof";
+} from "../crypto.js";
+import { Uint8ArrayToBase64 } from "../encoding.js";
+import { SigsumProof } from "../proof.js";
 import {
   Cosignature,
   Hash,
@@ -21,7 +21,7 @@ import {
   Signature,
   SignedTreeHead,
   TreeHead,
-} from "../types";
+} from "../types.js";
 
 const PROOF = `
 version=1

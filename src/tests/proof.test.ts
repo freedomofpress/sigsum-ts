@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Uint8ArrayToHex } from "./../encoding";
-import { parseInclusionProof, SigsumProof } from "./../proof";
+import { Uint8ArrayToHex } from "./../encoding.js";
+import { parseInclusionProof, SigsumProof } from "./../proof.js";
 
 const HASH = "00".repeat(32);
 const SIGNATURE = "00".repeat(64);

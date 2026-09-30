@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parsePolicyText } from "../config";
+import { parsePolicyText } from "../config.js";
 
 const log1 = "4644af2abd40f4895a003bca350f9d5912ab301a49c77f13e5b6d905c20a5fe6";
 const log2 = "0ec7e16843119b120377a73913ac6acbc2d03d82432e2c36b841b09a95841f25";

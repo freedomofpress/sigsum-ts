@@ -1,6 +1,6 @@
-import { prefixInteriorNode } from "./constants";
-import { stringToUint8Array } from "./encoding";
-import { formatCheckpoint, formatCosignedData } from "./format";
+import { prefixInteriorNode } from "./constants.js";
+import { stringToUint8Array } from "./encoding.js";
+import { formatCheckpoint, formatCosignedData } from "./format.js";
 import {
   Cosignature,
   Hash,
@@ -10,7 +10,7 @@ import {
   Signature,
   SignedTreeHead,
   TreeHead,
-} from "./types";
+} from "./types.js";
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return Uint8Array.from(bytes).buffer;

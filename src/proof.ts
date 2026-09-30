@@ -1,4 +1,4 @@
-import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding";
+import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding.js";
 import {
   Base64KeyHash,
   Cosignature,
@@ -8,7 +8,7 @@ import {
   KeyHash,
   ShortLeaf,
   Signature,
-} from "./types";
+} from "./types.js";
 
 const HASH_BYTES = 32;
 const SIGNATURE_BYTES = 64;

@@ -1,4 +1,4 @@
-import { stringToUint8Array } from "./encoding";
+import { stringToUint8Array } from "./encoding.js";
 
 export const CheckpointNamePrefix = "sigsum.org/v1/tree/";
 export const CosignatureNamespace = "cosignature/v1";

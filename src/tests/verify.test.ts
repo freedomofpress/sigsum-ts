@@ -1,13 +1,13 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { hexToUint8Array } from "../encoding";
-import { compilePolicy } from "../policyCompiler";
-import { RawPublicKey } from "../types";
+import { hexToUint8Array } from "../encoding.js";
+import { compilePolicy } from "../policyCompiler.js";
+import { RawPublicKey } from "../types.js";
 import {
   verifyHash,
   verifyMessage,
   verifyMessageWithCompiledPolicy,
-} from "../verify";
+} from "../verify.js";
 
 type VerifierFn = (
   message: Uint8Array,
