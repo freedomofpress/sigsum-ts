@@ -51,10 +51,13 @@ export async function verifySignature(
   return verifyBytes(key.key, message, signature.bytes);
 }
 
-export async function hashKey(publicKey: PublicKey): Promise<KeyHash> {
+export async function exportRawKey(key: CryptoKey): Promise<RawPublicKey> {
   const subtle = await getSubtle();
-  const raw = new RawPublicKey(await subtle.exportKey("raw", publicKey.key));
-  return new KeyHash(await sha256(raw.bytes));
+  return new RawPublicKey(await subtle.exportKey("raw", key));
+}
+
+export async function hashKey(publicKey: PublicKey): Promise<KeyHash> {
+  return new KeyHash(await sha256((await exportRawKey(publicKey.key)).bytes));
 }
 
 export async function hashMessage(message: Uint8Array): Promise<Hash> {

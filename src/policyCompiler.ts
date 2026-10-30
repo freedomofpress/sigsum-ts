@@ -1,8 +1,12 @@
 // https://git.glasklar.is/nisse/sigsum-c/-/blob/main/tools/sigsum-compile-policy.c?ref_type=heads
 
-import { base64ToUint8Array, getSubtle } from "@freedomofpress/crypto-browser";
+import {
+  base64ToUint8Array,
+  concatBytes,
+} from "@freedomofpress/crypto-browser";
 
 import { parsePolicyText } from "./config.js";
+import { exportRawKey } from "./crypto.js";
 import {
   Entity,
   isQuorumKofN,
@@ -41,18 +45,13 @@ const compareUint8Arrays = (a: Uint8Array, b: Uint8Array): number => {
   return a.length - b.length;
 };
 
-async function exportRawKey(entity: Entity): Promise<RawPublicKey> {
-  const subtle = await getSubtle();
-  return new RawPublicKey(await subtle.exportKey("raw", entity.publicKey.key));
-}
-
 async function collectSortedEntries(
   map: Map<Base64KeyHash, Entity>,
 ): Promise<KeyEntry[]> {
   const entries: KeyEntry[] = [];
 
   for (const [encoded, entity] of map.entries()) {
-    const raw = await exportRawKey(entity);
+    const raw = await exportRawKey(entity.publicKey.key);
     const hash = new KeyHash(base64ToUint8Array(encoded.value));
 
     entries.push({
@@ -299,23 +298,18 @@ export async function compilePolicyFromParsed(
     witnessEntries.reduce((acc, entry) => acc + entry.raw.bytes.length, 0) +
     quorumBytecode.length;
 
-  const output = new Uint8Array(totalSize);
-  output[0] = 0;
-  output[1] = logEntries.length;
-  output[2] = witnessEntries.length;
-  output[3] = quorumBytecode.length;
-
-  let offset = 4;
-  for (const entry of logEntries) {
-    output.set(entry.raw.bytes, offset);
-    offset += entry.raw.bytes.length;
-  }
-  for (const entry of witnessEntries) {
-    output.set(entry.raw.bytes, offset);
-    offset += entry.raw.bytes.length;
-  }
-
-  output.set(quorumBytecode, offset);
-
+  const output = concatBytes(
+    new Uint8Array([
+      0,
+      logEntries.length,
+      witnessEntries.length,
+      quorumBytecode.length,
+    ]),
+    ...logEntries.map((entry) => entry.raw.bytes),
+    ...witnessEntries.map((entry) => entry.raw.bytes),
+    quorumBytecode,
+  );
+  if (output.length !== totalSize)
+    throw new Error("compiled policy size mismatch");
   return output;
 }

@@ -1,4 +1,4 @@
-import { sha256 } from "@freedomofpress/crypto-browser";
+import { concatBytes, sha256 } from "@freedomofpress/crypto-browser";
 
 export abstract class ByteValue {
   readonly bytes: Uint8Array;
@@ -130,14 +130,12 @@ export class Leaf {
    *   [97..128]      key hash (32 bytes)
    */
   public toBytes(): Uint8Array {
-    const leafBinary = new Uint8Array(1 + 32 + 64 + 32);
-    leafBinary[0] = 0x0; // PrefixLeafNode
-
-    leafBinary.set(this.checksum.bytes, 1);
-    leafBinary.set(this.signature.bytes, 1 + 32);
-    leafBinary.set(this.keyHash.bytes, 1 + 32 + 64);
-
-    return leafBinary;
+    return concatBytes(
+      new Uint8Array([0]), // PrefixLeafNode
+      this.checksum.bytes,
+      this.signature.bytes,
+      this.keyHash.bytes,
+    );
   }
 
   public async hashLeaf(): Promise<Hash> {
