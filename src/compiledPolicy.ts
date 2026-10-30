@@ -111,10 +111,10 @@ export function evalQuorumBytecode(
   quorum: Uint8Array,
   nwitnesses: number,
   found: Uint8Array,
-  scratch?: Uint8Array,
 ): boolean {
   if (quorum.length === 0) return true;
-  const stack = scratch ?? new Uint8Array(Math.max(1, quorum.length));
+  // Each instruction pushes at most one value, so the stack never outgrows the bytecode.
+  const stack = new Uint8Array(quorum.length);
   let sp = 0;
   let prefix = 0 >>> 0;
 
