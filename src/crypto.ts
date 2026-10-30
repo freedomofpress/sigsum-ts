@@ -1,10 +1,13 @@
 import {
   getSubtle,
   hashChildren,
+  importKey as importRawKey,
   sha256,
   stringToUint8Array,
   uint8ArrayEqual,
+  Uint8ArrayToHex,
   verifyInclusionProof as verifyInclusionProofBytes,
+  verifySignature as verifyBytes,
 } from "@freedomofpress/crypto-browser";
 
 import { formatCheckpoint, formatCosignedData } from "./format.js";
@@ -27,16 +30,13 @@ export async function importKey(
   if (rawPublicKey.bytes.length !== 32) {
     throw new Error("Ed25519 raw keys must be exactly 32-bytes");
   }
-  const subtle = await getSubtle();
-  const key = await subtle.importKey(
-    "raw",
-    rawPublicKey.bytes as BufferSource,
-    "Ed25519",
-    true,
-    ["verify"],
+  return new PublicKey(
+    await importRawKey(
+      "ed25519",
+      "ed25519",
+      Uint8ArrayToHex(rawPublicKey.bytes),
+    ),
   );
-
-  return new PublicKey(key);
 }
 
 export async function verifySignature(
@@ -48,13 +48,7 @@ export async function verifySignature(
     throw new Error("Signature must be 64 bytes for Ed25519.");
   }
 
-  const subtle = await getSubtle();
-  return await subtle.verify(
-    { name: "Ed25519" },
-    key.key,
-    signature.bytes as BufferSource,
-    message as BufferSource,
-  );
+  return verifyBytes(key.key, message, signature.bytes);
 }
 
 export async function hashKey(publicKey: PublicKey): Promise<KeyHash> {
