@@ -1,6 +1,6 @@
+import { Uint8ArrayToHex } from "@freedomofpress/crypto-browser";
 import { describe, expect, it } from "vitest";
 
-import { Uint8ArrayToHex } from "./../encoding.js";
 import { parseInclusionProof, SigsumProof } from "./../proof.js";
 
 const HASH = "00".repeat(32);
@@ -56,7 +56,9 @@ describe("SigsumProof", () => {
 
   it("rejects non-canonical and unsafe integers", async () => {
     await expect(
-      SigsumProof.fromAscii(SINGLETON_PROOF.replace("tree_size=1", "tree_size=01")),
+      SigsumProof.fromAscii(
+        SINGLETON_PROOF.replace("tree_size=1", "tree_size=01"),
+      ),
     ).rejects.toThrow("invalid tree size");
     await expect(
       SigsumProof.fromAscii(

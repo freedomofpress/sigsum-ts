@@ -1,5 +1,12 @@
-import { prefixInteriorNode } from "./constants.js";
-import { stringToUint8Array } from "./encoding.js";
+import {
+  getSubtle,
+  hashChildren,
+  sha256,
+  stringToUint8Array,
+  uint8ArrayEqual,
+  verifyInclusionProof as verifyInclusionProofBytes,
+} from "@freedomofpress/crypto-browser";
+
 import { formatCheckpoint, formatCosignedData } from "./format.js";
 import {
   Cosignature,
@@ -12,20 +19,7 @@ import {
   TreeHead,
 } from "./types.js";
 
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return Uint8Array.from(bytes).buffer;
-}
-
-export function constantTimeBufferEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a[i] ^ b[i];
-  }
-
-  return diff === 0;
-}
+export { uint8ArrayEqual as constantTimeBufferEqual };
 
 export async function importKey(
   rawPublicKey: RawPublicKey,
@@ -33,9 +27,10 @@ export async function importKey(
   if (rawPublicKey.bytes.length !== 32) {
     throw new Error("Ed25519 raw keys must be exactly 32-bytes");
   }
-  const key = await crypto.subtle.importKey(
+  const subtle = await getSubtle();
+  const key = await subtle.importKey(
     "raw",
-    toArrayBuffer(rawPublicKey.bytes),
+    rawPublicKey.bytes as BufferSource,
     "Ed25519",
     true,
     ["verify"],
@@ -53,26 +48,23 @@ export async function verifySignature(
     throw new Error("Signature must be 64 bytes for Ed25519.");
   }
 
-  return await crypto.subtle.verify(
+  const subtle = await getSubtle();
+  return await subtle.verify(
     { name: "Ed25519" },
     key.key,
-    toArrayBuffer(signature.bytes),
-    toArrayBuffer(message),
+    signature.bytes as BufferSource,
+    message as BufferSource,
   );
 }
 
 export async function hashKey(publicKey: PublicKey): Promise<KeyHash> {
-  const rawBuffer = await crypto.subtle.exportKey("raw", publicKey.key);
-  const raw = new RawPublicKey(rawBuffer);
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    raw.bytes.buffer as ArrayBuffer,
-  );
-  return new KeyHash(digest);
+  const subtle = await getSubtle();
+  const raw = new RawPublicKey(await subtle.exportKey("raw", publicKey.key));
+  return new KeyHash(await sha256(raw.bytes));
 }
 
 export async function hashMessage(message: Uint8Array): Promise<Hash> {
-  return new Hash(await crypto.subtle.digest("SHA-256", toArrayBuffer(message)));
+  return new Hash(await sha256(message));
 }
 
 export async function verifySignedTreeHead(
@@ -108,17 +100,11 @@ export async function verifyCosignedTreeHead(
 }
 
 export async function hashInteriorNode(left: Hash, right: Hash): Promise<Hash> {
-  const prefix = prefixInteriorNode;
-  const combined = new Uint8Array(1 + left.bytes.length + right.bytes.length);
-  combined.set(prefix, 0);
-  combined.set(left.bytes, 1);
-  combined.set(right.bytes, 1 + left.bytes.length);
-
-  const hashBuffer = await crypto.subtle.digest("SHA-256", combined);
-  const hash = new Hash(hashBuffer);
-
-  return hash;
+  return new Hash(await hashChildren(left.bytes, right.bytes));
 }
+
+const bitLength = (n: bigint): number => (n === 0n ? 0 : n.toString(2).length);
+const popCount = (n: bigint): number => n.toString(2).split("1").length - 1;
 
 export async function verifyInclusionProof(
   leafHash: Hash,
@@ -148,38 +134,31 @@ export async function verifyInclusionProof(
     if (path.length !== 0) {
       throw new Error("internal error: unused path elements");
     }
-    if (!constantTimeBufferEqual(leafHash.bytes, treeHead.RootHash.bytes)) {
+    if (!uint8ArrayEqual(leafHash.bytes, treeHead.RootHash.bytes)) {
       throw new Error("tree size is 1 but leaf does not match the root");
     }
     return true;
   }
 
-  let currentHash = leafHash;
-  let currentIndex = leafIndex;
-  let lastNodeIndex = treeHead.Size - 1;
-  let pathIndex = 0;
-  const nextSibling = (): Hash => {
-    const sibling = path[pathIndex++];
-    if (!sibling) throw new Error("proof input is malformed: path too short");
-    return sibling;
-  };
-
-  while (lastNodeIndex > 0) {
-    if (currentIndex % 2 === 1) {
-      currentHash = await hashInteriorNode(nextSibling(), currentHash);
-    } else if (currentIndex < lastNodeIndex) {
-      currentHash = await hashInteriorNode(currentHash, nextSibling());
-    }
-
-    currentIndex = Math.floor(currentIndex / 2);
-    lastNodeIndex = Math.floor(lastNodeIndex / 2);
-  }
-
-  if (pathIndex !== path.length) {
+  // RFC 9162 §2.1.3.2: one sibling per level up to where the paths to the
+  // leaf and to the last leaf diverge, then one per set bit above it.
+  const inner = bitLength(BigInt(leafIndex) ^ BigInt(treeHead.Size - 1));
+  const expected = inner + popCount(BigInt(leafIndex) >> BigInt(inner));
+  if (path.length > expected) {
     throw new Error("internal error: unused path elements");
   }
+  if (path.length < expected) {
+    throw new Error("proof input is malformed: path too short");
+  }
 
-  if (!constantTimeBufferEqual(currentHash.bytes, treeHead.RootHash.bytes)) {
+  const ok = await verifyInclusionProofBytes(
+    leafHash.bytes,
+    leafIndex,
+    treeHead.Size,
+    treeHead.RootHash.bytes,
+    path.map((hash) => hash.bytes),
+  );
+  if (!ok) {
     throw new Error("invalid proof: root hash does not match computed value");
   }
 

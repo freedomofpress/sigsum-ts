@@ -1,3 +1,4 @@
+import { Uint8ArrayToHex } from "@freedomofpress/crypto-browser";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -5,7 +6,6 @@ import {
   importAndHashAll,
   parseCompiledPolicy,
 } from "../compiledPolicy.js";
-import { Uint8ArrayToHex } from "../encoding.js";
 
 describe("compiledPolicy", () => {
   it("rejects unsupported versions and trailing data", () => {
@@ -50,11 +50,7 @@ describe("compiledPolicy", () => {
     ];
     for (const bytecode of invalid) {
       expect(
-        evalQuorumBytecode(
-          new Uint8Array(bytecode),
-          1,
-          new Uint8Array([1]),
-        ),
+        evalQuorumBytecode(new Uint8Array(bytecode), 1, new Uint8Array([1])),
       ).toBe(false);
     }
   });

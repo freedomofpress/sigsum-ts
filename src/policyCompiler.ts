@@ -1,8 +1,15 @@
 // https://git.glasklar.is/nisse/sigsum-c/-/blob/main/tools/sigsum-compile-policy.c?ref_type=heads
 
+import { base64ToUint8Array, getSubtle } from "@freedomofpress/crypto-browser";
+
 import { parsePolicyText } from "./config.js";
-import { base64ToUint8Array } from "./encoding.js";
-import { Entity, isQuorumKofN, isQuorumSingle, Policy, Quorum } from "./policy.js";
+import {
+  Entity,
+  isQuorumKofN,
+  isQuorumSingle,
+  Policy,
+  Quorum,
+} from "./policy.js";
 import { Base64KeyHash, KeyHash, RawPublicKey } from "./types.js";
 
 const BYTECODE_ADD = 0x01;
@@ -35,9 +42,8 @@ const compareUint8Arrays = (a: Uint8Array, b: Uint8Array): number => {
 };
 
 async function exportRawKey(entity: Entity): Promise<RawPublicKey> {
-  return new RawPublicKey(
-    await crypto.subtle.exportKey("raw", entity.publicKey.key),
-  );
+  const subtle = await getSubtle();
+  return new RawPublicKey(await subtle.exportKey("raw", entity.publicKey.key));
 }
 
 async function collectSortedEntries(
@@ -126,7 +132,7 @@ function groupBytecodeSort(
     offset += size;
   }
 
-  for (let i = interval; i > 1; ) {
+  for (let i = interval; i > 1;) {
     const addPos = offset + i * (size + 1) - 1;
     bytecode[addPos] = BYTECODE_ADD;
     i--;

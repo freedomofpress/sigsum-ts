@@ -1,4 +1,8 @@
-import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding.js";
+import {
+  hexToUint8Array,
+  Uint8ArrayToBase64,
+} from "@freedomofpress/crypto-browser";
+
 import {
   Base64KeyHash,
   Cosignature,
@@ -32,7 +36,8 @@ function parseUint(value: string, name: string, allowZero = true): number {
 
 function parseHex(value: string, length: number, name: string): Uint8Array {
   const bytes = hexToUint8Array(value);
-  if (bytes.length !== length) throw new Error(`${name} must be ${length} bytes`);
+  if (bytes.length !== length)
+    throw new Error(`${name} must be ${length} bytes`);
   return bytes;
 }
 

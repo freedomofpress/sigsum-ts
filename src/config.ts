@@ -1,5 +1,9 @@
+import {
+  hexToUint8Array,
+  Uint8ArrayToBase64,
+} from "@freedomofpress/crypto-browser";
+
 import { hashKey, importKey } from "./crypto.js";
-import { hexToUint8Array, Uint8ArrayToBase64 } from "./encoding.js";
 import {
   Entity,
   EntityMap,
