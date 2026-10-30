@@ -1,6 +1,6 @@
+import { hexToUint8Array } from "@freedomofpress/crypto-browser";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { hexToUint8Array } from "../encoding.js";
 import { compilePolicy } from "../policyCompiler.js";
 import { RawPublicKey } from "../types.js";
 import {

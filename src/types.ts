@@ -1,3 +1,5 @@
+import { sha256 } from "@freedomofpress/crypto-browser";
+
 export abstract class ByteValue {
   readonly bytes: Uint8Array;
 
@@ -139,7 +141,7 @@ export class Leaf {
   }
 
   public async hashLeaf(): Promise<Hash> {
-    const digest = await crypto.subtle.digest("SHA-256", this.toBytes().buffer as ArrayBuffer);
+    const digest = await sha256(this.toBytes());
     return new Hash(digest);
   }
 }

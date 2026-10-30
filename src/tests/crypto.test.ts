@@ -1,3 +1,4 @@
+import { Uint8ArrayToBase64 } from "@freedomofpress/crypto-browser";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -11,7 +12,6 @@ import {
   verifySignature,
   verifySignedTreeHead,
 } from "../crypto.js";
-import { Uint8ArrayToBase64 } from "../encoding.js";
 import { SigsumProof } from "../proof.js";
 import {
   Cosignature,
@@ -195,9 +195,7 @@ describe("crypto", () => {
 
   it("hashes only the bytes in a view", async () => {
     const backing = new Uint8Array([0, ...VALID_MESSAGE, 0]);
-    const viewHash = await hashMessage(
-      backing.subarray(1, backing.length - 1),
-    );
+    const viewHash = await hashMessage(backing.subarray(1, backing.length - 1));
     const messageHash = await hashMessage(VALID_MESSAGE);
     expect(viewHash.bytes).toEqual(messageHash.bytes);
   });
@@ -390,7 +388,12 @@ describe("crypto", () => {
     }
 
     await expect(
-      verifyInclusionProof(leaf, 0, { Size: 2 ** 31 + 1, RootHash: root }, path),
+      verifyInclusionProof(
+        leaf,
+        0,
+        { Size: 2 ** 31 + 1, RootHash: root },
+        path,
+      ),
     ).resolves.toBe(true);
   });
 });

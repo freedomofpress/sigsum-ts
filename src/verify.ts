@@ -1,3 +1,5 @@
+import { Uint8ArrayToBase64 } from "@freedomofpress/crypto-browser";
+
 import {
   evalQuorumBytecode,
   importAndHashAll,
@@ -15,7 +17,6 @@ import {
   verifySignature,
   verifySignedTreeHead,
 } from "./crypto.js";
-import { Uint8ArrayToBase64 } from "./encoding.js";
 import { attachNamespace } from "./format.js";
 import { Policy } from "./policy.js";
 import { SigsumProof } from "./proof.js";

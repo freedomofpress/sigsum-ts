@@ -1,6 +1,6 @@
+import { Uint8ArrayToHex } from "@freedomofpress/crypto-browser";
 import { describe, expect, it } from "vitest";
 
-import { Uint8ArrayToHex } from "../encoding.js";
 import { compilePolicy } from "../policyCompiler.js";
 
 const SAMPLE_POLICY = `
