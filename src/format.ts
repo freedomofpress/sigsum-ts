@@ -1,4 +1,5 @@
 import {
+  concatBytes,
   Uint8ArrayToBase64,
   Uint8ArrayToHex,
 } from "@freedomofpress/crypto-browser";
@@ -30,9 +31,5 @@ export function attachNamespace(
   namespace: Uint8Array,
   hash: Uint8Array,
 ): Uint8Array {
-  const result = new Uint8Array(namespace.length + 1 + hash.length);
-  result.set(namespace, 0);
-  result[namespace.length] = 0;
-  result.set(hash, namespace.length + 1);
-  return result;
+  return concatBytes(namespace, new Uint8Array([0]), hash);
 }
